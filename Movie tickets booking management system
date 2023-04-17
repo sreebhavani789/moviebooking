@@ -1,0 +1,204 @@
+#connect database
+import pymysql
+import re
+import pandas as pd
+db_name="movie_booking"
+db_host="localhost"
+db_username="root"
+db_password="123456"
+try:
+    con=pymysql.connect(host=db_host,
+                        port=int(3306),
+                        user="root",
+                        passwd="123456",
+                        db="movie_Booking")
+except e:
+    print(e)
+if con:
+    print("successfully connected")
+else:
+    print("error")
+#SELECT  OR CREATE DATABASE
+
+c = con.cursor()
+c.execute("show databases")
+dl=c.fetchall()
+dl2=[]
+for i in dl:
+    dl2.append(i[0])
+if 'shows' in dl2:
+    sql="use shows"
+    c.execute(sql)
+else:
+    sql1="create database shows"
+    c.execute(sql1)
+    sql2="use shows"
+    c.execute(sql2)
+    sql3="""create table Myshow( Movie_id int not null primary key auto_increment,MovieName varchar(20),Charge integer,ShowTime varchar(50),Date varchar(20))"""
+    c.execute(sql3)
+    sql4="""create table Viewers( id int not null primary key,Name varchar(20),Ticket integer,Payment integer,ShowDate varchar(20),Phone varchar(20), foreign key (id) references myshow(Movie_id))"""
+    c.execute(sql4)
+    sql5="""create table Snacks(Name varchar(20),Cost integer)"""
+    c.execute(sql5)
+    sql6="""create table Worker(Name varchar(100),Work varchar(20),Salary varchar(20))"""
+    c.execute(sql6)
+    con.commit()
+#FUNCTIONS FOR THE OPTIONS
+# def movie_id_validation(m_id):
+    
+#     if(re.match('[\d]+',m_id)):
+#         return True
+#     else:
+#         print("Enter the valid movie id")
+#         return False
+
+def AddShows():
+    mi = input("Movie_id :")
+    mn = input("Movie Name :")
+    c = input("Charge:")
+    st = input("ShowTime:")
+    d = input("Date:")
+    data = (mi,mn,c,st,d)
+    sql ='insert into MyShow values(%s,%s,%s,%s,%s)'
+    c = con.cursor()
+    c.execute(sql,data)
+    con.commit()
+    print("Data Inserted Successfully")
+    options()
+    
+def delete_shows():
+    MovieName=input("Enter MovieName : ")
+    c.execute("delete Myshow where MovieName=%s",(MovieName,))
+    con.commit()
+    
+def update_shows():
+    movie_id = int(input("Enter the movie id:"))
+    movieName=input("Enter MovieName :")
+    c.execute("update myshow set movieName = %s where Movie_id = %s",(movieName,movie_id))
+    con.commit()
+    print(movieName+" is updated!")
+    options()
+
+def AddSnacks():
+    n = input("Name of sacks:")
+    c = input("cost of snacks:")
+    data = (n,c)
+    sql='insert into Snacks values(%s,%s)'
+    c = con.cursor()
+    c.execute(sql,data)
+    con.commit()
+    print("Data Inserted Successfully")
+    options()
+
+def Booking():
+    mi = input("Movie_id :")
+    vn = input("Viewer Name:")
+    t = int(input(" No of Tickets: "))
+    c = int(input("cost per Ticket"))
+    d = input("Date&Time:")
+    p = input("Phone:")
+    data = (mi,vn,t,t*c,d,p)
+    sql ='insert into viewers values( %s,%s,%s,%s,%s,%s)'
+    c=con.cursor()
+    c.execute(sql,data)
+    con.commit()
+    print("Data Inserted Successfully")
+    options()
+    
+def AddWorker():
+    n = input("Name of worker:")
+    w = input("Work of worker:")
+    s = input("Salary of worker:")
+    data=(n,w,s)
+    sql ='insert into Worker values(%s,%s,%s)'
+    c = con.cursor()
+    c.execute(sql,data)
+    con.commit()
+    print("Data inserted Successfully")
+    options()
+    
+def dShows():
+    sd = input("Show Date:")
+    sql ='select *from MyShow'
+    c = con.cursor()
+    c.execute(sql)
+    d = c.fetchall()
+    for i in d:
+        if i[4]==sd:
+            print(i)
+    options()
+    
+def dBooking():
+    sd=input("Show Date&Time:")
+    sql='select *from Viewers'
+    c = con.cursor()
+    c.execute(sql)
+    d = c.fetchall()
+    for i in d:
+        if i[4]==sd:
+            print(i)
+    options()
+    
+def dWorker():
+    sql='select *from Worker'
+    c=con.cursor()
+    c.execute(sql)
+    d = c.fetchall()
+    for i in d:
+        print("Name:",i[0],"Work:",i[1],"Salary:",i[2])
+    options()
+user_name=input("Enter User Name : ")
+
+password=input("Enter Password : ")
+if user_name=="admin" and password=="1234":
+    print("Welcome Admin")  
+    print("movie ticket booking  management system")
+    print(""" 
+                1.  Add Shows
+                2.  Add Snacks
+                3.  Book Ticket
+                4.  Add worker
+                5.  Display Shows
+                6.  Display Booking
+                7.  Display Worker
+                8.  delete_shows
+                9.  update_shows
+    """)    
+def options():
+    print(""" 
+                1.  Add Shows
+                2.  Add Snacks
+                3.  Book Ticket
+                4.  Addworker
+                5.  Display Shows
+                6.  Display Booking
+                7.  Display Worker
+                8.  delete_shows
+                9.  update_shows
+""")    
+while True:
+   
+    choice = input("Select Option:")
+    if choice=='1':
+        AddShows()
+    elif choice=='2':
+        AddSnacks()
+    elif choice=='3':
+        Booking()
+    elif choice=='4':
+        AddWorker()
+    elif choice=='5':
+        dShows()
+    elif choice=='6':
+        dBooking()
+    elif choice=='7':
+        dWorker()
+    elif choice=='8':
+        delete_shows()
+    elif choice=='9':
+         update_shows()
+    else:
+        print("Enter Again..........")
+        options()
+        
+signin()
